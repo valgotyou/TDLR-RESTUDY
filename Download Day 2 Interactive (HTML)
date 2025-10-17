@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TDLR Cosmetology – Day 2 Interactive Quiz (Hair Theory & Structure)</title>
+<style>
+  :root{--pad:16px;--radius:12px;--muted:#666}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;line-height:1.35;color:#111;background:#fff}
+  header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #eee;padding:12px 16px}
+  header h1{font-size:18px;margin:0}
+  header small{color:var(--muted)}
+  main{padding:16px;max-width:900px;margin:0 auto}
+  .pill{display:inline-block;font-size:12px;padding:4px 8px;border-radius:999px;background:#efefef;color:#333;margin-right:6px}
+  .card{background:#fafafa;border:1px solid #eee;border-radius:12px;padding:16px;margin:12px 0}
+  .muted{color:var(--muted)}
+  .btn{background:#111;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-size:14px;cursor:pointer}
+  .btn.ghost{background:#f2f2f2;color:#111}
+  .q{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px 0}
+  .q h4{margin:0 0 8px 0;font-size:16px}
+  .choices{display:grid;gap:8px}
+  button.choice{width:100%;text-align:left;background:#f7f7f7;border:1px solid #e6e6e6;padding:12px;border-radius:10px;font-size:15px;cursor:pointer}
+  button.choice.correct.selected{border-color:#2e7d32}
+  button.choice.incorrect.selected{border-color:#b00020}
+  .explain{display:none;margin-top:10px;background:#fcfcfc;border:1px dashed #e5e5e5;padding:10px;border-radius:10px;color:#333}
+  .explain.show{display:block}
+  .score{font-weight:600;margin:6px 0 0 0}
+  details{background:#fff;border:1px solid #eee;border-radius:10px;padding:10px 12px}
+  summary{font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <h1>Day 2 – Hair Theory & Structure <small class="muted">Interactive Quiz</small></h1>
+</header>
+<main>
+  <section class="card">
+    <span class="pill">Mobile Interactive</span>
+    <span class="pill">20 Questions</span>
+    <span class="pill">Tap to Reveal</span>
+    <p class="muted" style="margin-top:8px">Answer each item, then read the explanation. Use Shuffle for a fresh order.</p>
+    <button id="shuffleBtn" class="btn">🔀 Shuffle Questions</button>
+    <button id="resetBtn" class="btn ghost" style="margin-left:8px">↺ Reset</button>
+    <div class="score" id="scoreBox">Score: 0 / 20</div>
+  </section>
+
+  <section class="card">
+    <details open>
+      <summary>Key Reminders</summary>
+      <ul>
+        <li>Layers: <b>cuticle</b> (outer), <b>cortex</b> (strength/pigment), <b>medulla</b> (may be absent).</li>
+        <li>Phases: <b>Anagen</b> (growth), <b>Catagen</b> (transition), <b>Telogen</b> (rest/shedding).</li>
+        <li><b>Porosity</b> = absorb moisture; <b>Elasticity</b> = stretch & return; <b>Texture</b> = strand diameter.</li>
+        <li>Bonds: <b>Hydrogen</b> (water/heat), <b>Salt</b> (pH), <b>Disulfide</b> (chemical).</li>
+        <li>Melanin: <b>Eumelanin</b> (brown/black), <b>Pheomelanin</b> (red/blonde).</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="card">
+    <h3 style="margin:0 0 10px 0">Practice Questions</h3>
+    <div id="questions"></div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin:0 0 10px 0">Rapid Review (5)</h3>
+    <div id="rapid"></div>
+  </section>
+</main>
+
+<script>
+const BANK = [
+  {q:"The outermost layer of the hair shaft is the:",choices:["Cortex","Cuticle","Medulla","Papilla"],answer:1,exp:"The cuticle is the protective outer layer made of overlapping scale-like cells."},
+  {q:"The hair’s strength, elasticity, and natural pigment are primarily in the:",choices:["Cuticle","Cortex","Medulla","Sebaceous gland"],answer:1,exp:"The cortex contains fibrous keratin and melanin."},
+  {q:"Which growth phase is active growth?",choices:["Catagen","Anagen","Telogen","Exogen"],answer:1,exp:"Anagen = active growth; catagen = transition; telogen = rest/shedding."},
+  {q:"Hair porosity means:",choices:["Strand diameter","Hairs per square inch","Ability to absorb moisture","Natural level"],answer:2,exp:"Porosity reflects the hair’s capacity to absorb/retain moisture and chemicals."},
+  {q:"Highly porous hair tends to:",choices:["Process faster","Process slower","Repel color","Be more resistant"],answer:0,exp:"Raised cuticle allows quicker absorption and faster processing."},
+  {q:"Elasticity is hair’s ability to:",choices:["Absorb oil","Return after stretching","Resist brushing","Hold a set"],answer:1,exp:"Healthy hair stretches and returns; poor elasticity leads to breakage."},
+  {q:"Which bond is broken by water/heat and reforms on cooling/drying?",choices:["Disulfide","Hydrogen","Peptide","Salt"],answer:1,exp:"Hydrogen bonds are numerous and weak; key to temporary styling."},
+  {q:"Which bond is affected by pH changes?",choices:["Salt","Hydrogen","Disulfide","Peptide"],answer:0,exp:"Salt bonds are weak side bonds disrupted by acids/alkalis."},
+  {q:"Perms/relaxers change which bond?",choices:["Hydrogen","Salt","Disulfide","Peptide"],answer:2,exp:"Chemical texture services break and reform disulfide bonds in the cortex."},
+  {q:"Cone-shaped structure at base of follicle supplying nutrients:",choices:["Arrector pili","Dermal papilla","Sebaceous gland","Bulb"],answer:1,exp:"Dermal papilla provides blood supply to growing hair."},
+  {q:"Vellus hair is:",choices:["Long, coarse, pigmented","Short, fine, downy, little pigment","Damaged hair lacking medulla","Chemically processed"],answer:1,exp:"Vellus = fine and lightly pigmented; terminal = long, coarse, pigmented."},
+  {q:"Layer often absent in very fine hair:",choices:["Cuticle","Cortex","Medulla","Follicle"],answer:2,exp:"The medulla may be absent without affecting hair health."},
+  {q:"Healthy wet hair typically stretches about:",choices:["10–15%","20–30%","40–50%","60–70%"],answer:2,exp:"Wet hair stretches more than dry—about 40–50% if elasticity is normal."},
+  {q:"Eumelanin gives:",choices:["Red–yellow tones","Brown–black tones","White–gray","Blue–green"],answer:1,exp:"Eumelanin = brown/black; pheomelanin = red/yellow."},
+  {q:"Circular patches of hair loss suggest:",choices:["Tinea capitis","Alopecia areata","Pityriasis capitis","Pediculosis"],answer:1,exp:"Alopecia areata is autoimmune, causing patchy loss."},
+  {q:"Tinea capitis is a:",choices:["Bacterial infection","Viral infection","Fungal scalp infection","Autoimmune issue"],answer:2,exp:"Ringworm of the scalp is fungal and contagious."},
+  {q:"Density measures:",choices:["Strand diameter","Number of hairs per square inch","Moisture absorption","Curl pattern"],answer:1,exp:"Density counts how many hairs per area; texture is diameter."},
+  {q:"Texture refers to:",choices:["Overall condition","Diameter of a strand (fine/medium/coarse)","Hairs per square inch","Amount of wave"],answer:1,exp:"Texture is strand thickness."},
+  {q:"Cuticle scales point:",choices:["Toward the scalp","Randomly","Away from the scalp toward the ends","Straight outward"],answer:2,exp:"Scales overlap pointing toward the ends, protecting the cortex."},
+  {q:"Study of hair and scalp is called:",choices:["Dermatology","Trichology","Cosmetology","Mycology"],answer:1,exp:"Trichology focuses on hair structure, growth, and disorders."}
+];
+
+const RAPID = [
+  {q:"Active growth phase?",a:"Anagen"},
+  {q:"Layer with pigment/strength?",a:"Cortex"},
+  {q:"Two melanin types?",a:"Eumelanin & Pheomelanin"},
+  {q:"Bond changed by perms/relaxers?",a:"Disulfide"},
+  {q:"Porosity = ?",a:"Ability to absorb moisture"}
+];
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+let score=0;
+const scoreBox=document.getElementById('scoreBox');
+
+function renderQuestions(){
+  score=0; scoreBox.textContent=`Score: ${score} / 20`;
+  const cont=document.getElementById('questions'); cont.innerHTML="";
+  const items=shuffle(BANK);
+  items.forEach((item,idx)=>{
+    const wrap=document.createElement('div'); wrap.className='q';
+    wrap.innerHTML=`<h4>${idx+1}. ${item.q}</h4>`;
+    const grid=document.createElement('div'); grid.className='choices';
+    const exp=document.createElement('div'); exp.className='explain'; exp.innerHTML=`<strong>Answer: ${String.fromCharCode(97+item.answer)}) ${item.choices[item.answer]}</strong><br>${item.exp}`;
+    item.choices.forEach((c,i)=>{
+      const b=document.createElement('button'); b.className='choice'; b.textContent=`${String.fromCharCode(97+i)}) ${c}`;
+      b.addEventListener('click',()=>{
+        if(b.classList.contains('selected'))return;
+        const correct=i===item.answer;
+        b.classList.add('selected',correct?'correct':'incorrect');
+        if(correct){score++; scoreBox.textContent=`Score: ${score} / 20`;}
+        exp.classList.add('show');
+      });
+      grid.appendChild(b);
+    });
+    wrap.appendChild(grid); wrap.appendChild(exp); cont.appendChild(wrap);
+  });
+}
+
+function renderRapid(){
+  const cont=document.getElementById('rapid'); cont.innerHTML="";
+  RAPID.forEach((item,idx)=>{
+    const w=document.createElement('div'); w.className='q';
+    w.innerHTML=`<h4>R${idx+1}. ${item.q}</h4>`;
+    const btn=document.createElement('button'); btn.className='btn ghost'; btn.textContent='Show Answer';
+    const ans=document.createElement('div'); ans.className='explain'; ans.innerHTML=`<strong>${item.a}</strong>`;
+    btn.addEventListener('click',()=>ans.classList.toggle('show'));
+    w.appendChild(btn); w.appendChild(ans); cont.appendChild(w);
+  });
+}
+
+document.getElementById('shuffleBtn').addEventListener('click',renderQuestions);
+document.getElementById('resetBtn').addEventListener('click',renderQuestions);
+renderQuestions(); renderRapid();
+</script>
+</body>
+</html>
